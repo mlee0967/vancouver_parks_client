@@ -1,9 +1,20 @@
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
 import { GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow } from 'react-google-maps';
 import axios from 'axios';
+import { styled } from '@material-ui/core/styles';
 import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
+import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+import { borders } from '@material-ui/system';
+import Container from '@material-ui/core/Container';
+import Typography from '@material-ui/core/Typography';
+import 'typeface-roboto';
+
+const FilterCheckBox = styled(Checkbox)({
+  height: 8
+});
 
 const PARKS_PATH = 'http://localhost/map/parks.php';
 const FACILITIES_PATH = 'http://localhost/map/facilities.php';
@@ -109,64 +120,71 @@ class Map extends Component{
   render(){
     const parks = this.state.parks;
     return(
-      <div style={{width: '100vw', height: '100vh'}}>
-        <FormGroup row>
-          {
-            this.state.facilityTypes.map((facilityType) => (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={this.state.checked[facilityType]}
-                    name={facilityType}
-                    onChange={this.handleChange}
-                    color="primary"
-                  />
-                }
-                label={facilityType}
-              />
-            ))
-          }
-        </FormGroup>
+      <Container maxWidth="lg">
+      <div>
+        <Typography variant="body1">
+          Filters
+        </Typography>
+        <Box border={2} borderColor="grey.500">
+          <FormGroup row>
+            {
+              this.state.facilityTypes.map((facilityType) => (
+                <FormControlLabel
+                  control={
+                    <FilterCheckBox
+                      checked={this.state.checked[facilityType]}
+                      name={facilityType}
+                      onChange={this.handleChange}
+                      color="primary"
+                    />
+                  }
+                  label={facilityType}
+                />
+              ))
+            }
+          </FormGroup>
+        </Box><br/>
         <this.CMap
-          googleMapURL={this.props.googleMapURL}
-          loadingElement={<div style={{ height:"100%" }} />}
-          containerElement={<div style={{ height:"100%" }} />}
-          mapElement={<div style={{ height:"100%" }} />}
-        >
-          {
-            this.state.filtered.map((id) => (
-              <Marker
-                key={parks[id].name}
-                position={{lat: parks[id].lat, lng: parks[id].lng}}
-                onClick = {() => {
-                  this.setState({selected: parks[id].name});
-                }}
-              >
-                { this.state.selected===parks[id].name &&
-                  <InfoWindow
-                    anchor={Marker}
-                    onCloseClick={() => {
-                      this.setState({selected: null});
+              googleMapURL={this.props.googleMapURL}
+              loadingElement={<div style={{ height:"100%" }} />}
+              containerElement={<div style={{ height: `600px` }} />}
+              mapElement={<div style={{ height:"100%" }} />}
+            >
+              {
+                this.state.filtered.map((id) => (
+                  <Marker
+                    key={parks[id].name}
+                    position={{lat: parks[id].lat, lng: parks[id].lng}}
+                    onClick = {() => {
+                      this.setState({selected: parks[id].name});
                     }}
                   >
-                    <div>
-                      <b>{parks[id].name}</b><br/>
-                      {parks[id].address}
-                      {(parks[id].washrooms==="Y" || parks[id].facilities.length>0) && <span><br/><br/></span> }
-                      { parks[id].facilities.length>0 &&
-                      parks[id].facilities.map((facility) => (
-                            <span>{facility}<br/></span>
+                    { this.state.selected===parks[id].name &&
+                    <InfoWindow
+                      anchor={Marker}
+                      onCloseClick={() => {
+                        this.setState({selected: null});
+                      }}
+                    >
+                      <div>
+                        <b>{parks[id].name}</b><br/>
+                        {parks[id].address}
+                        {(parks[id].washrooms==="Y" || parks[id].facilities.length>0) && <span><br/><br/></span> }
+                        { parks[id].facilities.length>0 &&
+                        parks[id].facilities.map((facility) => (
+                          <span>{facility}<br/></span>
                         ))
-                      }
-                      {parks[id].washrooms==="Y" && <span>Washrooms<br/></span>}
-                    </div>
-                  </InfoWindow>
-                }
-              </Marker>
-            ))
-          }
-        </this.CMap>
+                        }
+                        {parks[id].washrooms==="Y" && <span>Washrooms<br/></span>}
+                      </div>
+                    </InfoWindow>
+                    }
+                  </Marker>
+                ))
+              }
+            </this.CMap>
       </div>
+      </Container>
     );
   }
 }
