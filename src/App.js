@@ -19,15 +19,6 @@ const FACILITIES_PATH = 'http://localhost/map/facilities.php';
 const FILTERS_PATH = 'http://localhost/map/filter.php';
 const PARKS_PATH = 'http://localhost/map/parks.php';
 
-const MapWrapped = withScriptjs(withGoogleMap(props =>
-  <GoogleMap
-    defaultZoom={12}
-    defaultCenter={{lat:49.256439, lng: -123.104004}}
-  >
-    {props.children}
-  </GoogleMap>
-));
-
 class App extends Component{
   static defaultProps = {
     googleMapURL: `https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places&key=
@@ -41,6 +32,7 @@ class App extends Component{
       facilityTypes: [],
       checked: {},
       filtered: [],
+      selected: null
     };
     
     this.handleChange = this.handleChange.bind(this);
@@ -55,15 +47,6 @@ class App extends Component{
     axios.get(`${FACILITIES_PATH}`)
     .then(result => this.setFacilities(result.data))
     .catch(e => console.log(e));
-  }
-  
-  setFacilities(result){
-    this.setState({...this.state, facilityTypes: result});
-    let checked = {};
-    result.forEach((facility) => {
-      checked[facility] = false;
-    });
-    this.setState({...this.state, checked: checked});
   }
   
   fetchFiltered(){
@@ -101,6 +84,15 @@ class App extends Component{
     this.fetchFiltered();
   };
   
+  setFacilities(result){
+    this.setState({...this.state, facilityTypes: result});
+    let checked = {};
+    result.forEach((facility) => {
+      checked[facility] = false;
+    });
+    this.setState({...this.state, checked: checked});
+  }
+  
   setParks(result){
     let parks = {};
     let filtered = [];
@@ -130,29 +122,14 @@ class App extends Component{
         <Container maxWidth="lg">
           <div>
             <br/><br/>
-            <Typography variant="body1">
-              Filters
-            </Typography>
-            <Box border={2} borderColor="grey.500" p={1}>
-              <FormGroup row>
-                {
-                  this.state.facilityTypes.map((facilityType) => (
-                    <FormControlLabel
-                      control={
-                        <FilterCheckBox
-                          checked={this.state.checked[facilityType]}
-                          name={facilityType}
-                          onChange={this.handleChange}
-                          color="primary"
-                          size="small"
-                        />
-                      }
-                      label={facilityType}
-                    />
-                  ))
-                }
-              </FormGroup>
-            </Box><br/>
+            <Typography variant="body1">Filters</Typography>
+            <CheckBoxes
+              facilityTypes={this.state.facilityTypes}
+              checked={this.state.checked}
+              handleChange={this.handleChange}
+              selected={this.state.selected}
+            />
+            <br/>
             <MapWrapped
                   googleMapURL={this.props.googleMapURL}
                   loadingElement={<div style={{height:"100%"}}/>}
@@ -161,35 +138,77 @@ class App extends Component{
                 >
                   {
                     this.state.filtered.map((id) => (
-                      <Marker
-                        key={parks[id].name}
-                        position={{lat: parks[id].lat, lng: parks[id].lng}}
-                        onClick = {() => {this.setState({selected: parks[id].name});}}
-                      >
-                        { this.state.selected===parks[id].name &&
-                        <InfoWindow
-                          anchor={Marker}
-                          onCloseClick={() => {this.setState({selected: null});}}
-                        >
-                          <div>
-                            <b>{parks[id].name}</b><br/>
-                            {parks[id].address}
-                            {(parks[id].washrooms==="Y" || parks[id].facilities.length>0) && <span><br/><br/></span>}
-                            {parks[id].facilities.length>0 &&
-                             parks[id].facilities.map((facility) => (<span>{facility}<br/></span>))}
-                            {parks[id].washrooms==="Y" && <span>Washrooms<br/></span>}
-                          </div>
-                        </InfoWindow>
-                        }
-                      </Marker>
+                      <MapMarker
+                        id = {id}
+                        park = {parks[id]}
+                        onClick = {() => {this.setState({selected: id});}}
+                        selected = {this.state.selected}
+                        onCloseClick={() => {this.setState({selected: null});}}
+                      />
                     ))
                   }
-                </MapWrapped>
+            </MapWrapped>
           </div>
         </Container>
       </div>
     );
   }
 }
+
+const CheckBoxes = ({facilityTypes, checked, handleChange}) => (
+  <Box border={2} borderColor="grey.500" p={1}>
+    <FormGroup row>
+      {
+        facilityTypes.map((facilityType) => (
+          <FormControlLabel
+            control={
+              <FilterCheckBox
+                checked={checked[facilityType]}
+                name={facilityType}
+                onChange={handleChange}
+                color="primary"
+                size="small"
+              />
+            }
+            label={facilityType}
+          />
+        ))
+      }
+    </FormGroup>
+  </Box>
+)
+
+const MapMarker = ({id, park, onClick, selected, onCloseClick}) => (
+  <Marker
+    onClick={onClick}
+    key={id}
+    position={{lat: park.lat, lng: park.lng}}
+  >
+    { selected===id &&
+    <InfoWindow
+      anchor={Marker}
+      onCloseClick={onCloseClick}
+    >
+      <div>
+        <b>{park.name}</b><br/>
+        {park.address}
+        {(park.washrooms==="Y" || park.facilities.length>0) && <span><br/><br/></span>}
+        {park.facilities.length>0 &&
+        park.facilities.map((facility) => (<span>{facility}<br/></span>))}
+        {park.washrooms==="Y" && <span>Washrooms<br/></span>}
+      </div>
+    </InfoWindow>
+    }
+  </Marker>
+)
+
+const MapWrapped = withScriptjs(withGoogleMap(props =>
+  <GoogleMap
+    defaultZoom={12}
+    defaultCenter={{lat:49.256439, lng: -123.104004}}
+  >
+    {props.children}
+  </GoogleMap>
+));
 
 export default App;
