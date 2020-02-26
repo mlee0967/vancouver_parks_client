@@ -1,15 +1,17 @@
-import React, { Component } from 'react';
+import React, { useState, Component } from 'react';
 import { GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow } from 'react-google-maps';
 import axios from 'axios';
 import { styled } from '@material-ui/core/styles';
-import FormGroup from "@material-ui/core/FormGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Box from '@material-ui/core/Box';
-import Container from '@material-ui/core/Container';
-import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
+import Box from '@material-ui/core/Box';
+import Checkbox from "@material-ui/core/Checkbox";
+import Container from '@material-ui/core/Container';
+import Collapse from '@material-ui/core/Collapse';
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormGroup from "@material-ui/core/FormGroup";
+import Switch from '@material-ui/core/Switch';
 import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 import 'typeface-roboto';
 
 const FilterCheckBox = styled(Checkbox)({ height: 8 });
@@ -120,34 +122,37 @@ class App extends Component{
           </Toolbar>
         </MainAppBar>
         <Container maxWidth="lg">
-          <div>
-            <br/><br/>
-            <Typography variant="body1">Filters</Typography>
-            <CheckBoxes
-              facilityTypes={this.state.facilityTypes}
-              checked={this.state.checked}
-              handleChange={this.handleChange}
-              selected={this.state.selected}
-            />
+          <br/>
+          <CollapseWrapper>
+            <div>
+              <CheckBoxes
+                facilityTypes={this.state.facilityTypes}
+                checked={this.state.checked}
+                handleChange={this.handleChange}
+                selected={this.state.selected}
+              />
+            </div>
+          </CollapseWrapper>
+          <div style={{height:'55vh'}}>
             <br/>
-            <MapWrapped
-                  googleMapURL={this.props.googleMapURL}
-                  loadingElement={<div style={{height:"100%"}}/>}
-                  containerElement={<div style={{height: `500px`}}/>}
-                  mapElement={<div style={{height:"100%" }}/>}
-                >
-                  {
-                    this.state.filtered.map((id) => (
-                      <MapMarker
-                        id = {id}
-                        park = {parks[id]}
-                        onClick = {() => {this.setState({selected: id});}}
-                        selected = {this.state.selected}
-                        onCloseClick={() => {this.setState({selected: null});}}
-                      />
-                    ))
-                  }
-            </MapWrapped>
+            <MapWrapper
+              googleMapURL={this.props.googleMapURL}
+              loadingElement={<div style={{height:"100%"}}/>}
+              containerElement={<div style={{height: "100%"}}/>}
+              mapElement={<div style={{height:"100%" }}/>}
+            >
+              {
+                this.state.filtered.map((id) => (
+                  <MapMarker
+                    id = {id}
+                    park = {parks[id]}
+                    onClick = {() => {this.setState({selected: id});}}
+                    selected = {this.state.selected}
+                    onCloseClick={() => {this.setState({selected: null});}}
+                  />
+                ))
+              }
+            </MapWrapper>
           </div>
         </Container>
       </div>
@@ -178,37 +183,60 @@ const CheckBoxes = ({facilityTypes, checked, handleChange}) => (
   </Box>
 )
 
-const MapMarker = ({id, park, onClick, selected, onCloseClick}) => (
-  <Marker
-    onClick={onClick}
-    key={id}
-    position={{lat: park.lat, lng: park.lng}}
-  >
-    { selected===id &&
-    <InfoWindow
-      anchor={Marker}
-      onCloseClick={onCloseClick}
-    >
-      <div>
-        <b>{park.name}</b><br/>
-        {park.address}
-        {(park.washrooms==="Y" || park.facilities.length>0) && <span><br/><br/></span>}
-        {park.facilities.length>0 &&
-        park.facilities.map((facility) => (<span>{facility}<br/></span>))}
-        {park.washrooms==="Y" && <span>Washrooms<br/></span>}
-      </div>
-    </InfoWindow>
-    }
-  </Marker>
-)
+const MapMarker = ({id, park, onClick, selected, onCloseClick}) => {
+  return (
+      <Marker
+        onClick={onClick}
+        key={id}
+        position={{lat: park.lat, lng: park.lng}}
+      >
+        { selected===id &&
+        <InfoWindow
+          anchor={Marker}
+          onCloseClick={onCloseClick}
+        >
+          <div>
+            <b>{park.name}</b><br/>
+            {park.address}
+            {(park.washrooms==="Y" || park.facilities.length>0) && <span><br/><br/></span>}
+            {park.facilities.length>0 &&
+            park.facilities.map((facility) => (<span>{facility}<br/></span>))}
+            {park.washrooms==="Y" && <span>Washrooms<br/></span>}
+          </div>
+        </InfoWindow>
+        }
+      </Marker>
+  )
+}
 
-const MapWrapped = withScriptjs(withGoogleMap(props =>
+const MapWrapper = withScriptjs(withGoogleMap(props =>
   <GoogleMap
     defaultZoom={12}
     defaultCenter={{lat:49.256439, lng: -123.104004}}
   >
     {props.children}
   </GoogleMap>
-));
+))
+
+const CollapseWrapper = ({children}) => {
+  const [checked, setChecked] = useState(true);
+  const handleChange = () => {
+    setChecked(prev => !prev);
+  };
+  
+  return (
+    <div>
+      <FormControlLabel
+        control={<Switch checked={checked} onChange={handleChange} />}
+        label="Show Filters"
+      />
+      <div>
+        <Collapse in={checked}>
+          {children}
+        </Collapse>
+      </div>
+    </div>
+  );
+}
 
 export default App;
