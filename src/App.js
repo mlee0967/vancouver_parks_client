@@ -183,31 +183,29 @@ const CheckBoxes = ({facilityTypes, checked, handleChange}) => (
   </Box>
 )
 
-const MapMarker = ({id, park, onClick, selected, onCloseClick}) => {
-  return (
-      <Marker
-        onClick={onClick}
-        key={id}
-        position={{lat: park.lat, lng: park.lng}}
-      >
-        { selected===id &&
-        <InfoWindow
-          anchor={Marker}
-          onCloseClick={onCloseClick}
-        >
-          <div>
-            <b>{park.name}</b><br/>
-            {park.address}
-            {(park.washrooms==="Y" || park.facilities.length>0) && <span><br/><br/></span>}
-            {park.facilities.length>0 &&
-            park.facilities.map((facility) => (<span>{facility}<br/></span>))}
-            {park.washrooms==="Y" && <span>Washrooms<br/></span>}
-          </div>
-        </InfoWindow>
-        }
-      </Marker>
-  )
-}
+const MapMarker = ({id, park, onClick, selected, onCloseClick}) => (
+  <Marker
+    onClick={onClick}
+    key={id}
+    position={{lat: park.lat, lng: park.lng}}
+  >
+    { selected===id &&
+    <InfoWindow
+      anchor={Marker}
+      onCloseClick={onCloseClick}
+    >
+      <div>
+        <b>{park.name}</b><br/>
+        {park.address}
+        {(park.washrooms==="Y" || park.facilities.length>0) && <span><br/><br/></span>}
+        {park.facilities.length>0 &&
+        park.facilities.map((facility) => (<span>{facility}<br/></span>))}
+        {park.washrooms==="Y" && <span>Washrooms<br/></span>}
+      </div>
+    </InfoWindow>
+    }
+  </Marker>
+)
 
 const MapWrapper = withScriptjs(withGoogleMap(props =>
   <GoogleMap
