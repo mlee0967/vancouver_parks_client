@@ -17,16 +17,11 @@ import 'typeface-roboto';
 const FilterCheckBox = styled(Checkbox)({ height: 8 });
 const MainAppBar = styled(AppBar)({ alignItems: 'center'})
 
-const FACILITIES_PATH = 'http://localhost/map/facilities.php';
-const FILTERS_PATH = 'http://localhost/map/filter.php';
-const PARKS_PATH = 'http://localhost/map/parks.php';
+const FACILITIES_PATH = 'http://localhost/api/facility_types';
+const FILTERS_PATH = 'http://localhost/api/park_ids';
+const PARKS_PATH = 'http://localhost/api/parks';
 
 class App extends Component{
-  static defaultProps = {
-    googleMapURL: `https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places&key=
-      ${process.env.REACT_APP_API_KEY}`,
-  }
-  
   constructor(props){
     super(props);
     this.state = {
@@ -66,8 +61,8 @@ class App extends Component{
       result.data.forEach((num) => filtered.push(num));
       this.setState({...this.state, filtered:filtered});
     })
-    .catch((error) => {
-      console.log(error);
+    .catch((e) => {
+      console.log(e);
     });
   }
   
@@ -136,7 +131,7 @@ class App extends Component{
           <div style={{height:'55vh'}}>
             <br/>
             <MapWrapper
-              googleMapURL={this.props.googleMapURL}
+              googleMapURL={`https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places&key=${process.env.REACT_APP_API_KEY}`}
               loadingElement={<div style={{height:"100%"}}/>}
               containerElement={<div style={{height: "100%"}}/>}
               mapElement={<div style={{height:"100%" }}/>}
