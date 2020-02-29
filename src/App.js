@@ -1,17 +1,9 @@
 import React, { useState, Component } from 'react';
 import { GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow } from 'react-google-maps';
 import axios from 'axios';
+import { AppBar, Box, Checkbox, Container, Collapse,
+         FormControlLabel, FormGroup, Switch, Toolbar, Typography} from '@material-ui/core/';
 import { styled } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Box from '@material-ui/core/Box';
-import Checkbox from "@material-ui/core/Checkbox";
-import Container from '@material-ui/core/Container';
-import Collapse from '@material-ui/core/Collapse';
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormGroup from "@material-ui/core/FormGroup";
-import Switch from '@material-ui/core/Switch';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import 'typeface-roboto';
 
 const FilterCheckBox = styled(Checkbox)({ height: 8 });
